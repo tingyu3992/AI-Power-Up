@@ -1,0 +1,47 @@
+import openai
+import os
+from datetime import datetime
+
+# === STEP 1：設定 API 金鑰（建議使用環境變數） ===
+openai.api_key = os.getenv("OPENAI_API_KEY")  # 或直接寫成 openai.api_key = "sk-..."
+
+# === STEP 2：定義提示清單（可依需求修改） ===
+prompts = [
+    "用一句話解釋什麼是黑洞。",
+    "請用一句話總結 AI 發展歷史。",
+    "翻譯這句話成英文：我愛閱讀關於宇宙的書。",
+    "給我三個 AI 主題 podcast 的名稱。",
+    "我最近很焦慮，請用一句話給我心理建議。"
+]
+
+# === STEP 3：與 GPT 模型互動並儲存回應 ===
+responses = []
+
+for i, prompt in enumerate(prompts):
+    print(f"\n🔹 問題 {i+1}: {prompt}")
+    
+    try:
+        # 與 OpenAI ChatGPT API 對話
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # 或 "gpt-4"（需權限）
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        # 擷取模型回應文字
+        reply = response['choices'][0]['message']['content'].strip()
+        responses.append((prompt, reply))
+
+        print(f"🤖 回答: {reply}")
+
+    except Exception as e:
+        print(f"❌ 發生錯誤：{e}")
+        responses.append((prompt, "ERROR"))
+
+# === STEP 4：將所有結果寫入檔案 ===
+filename = f"ai_responses_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+
+with open(filename, "w", encoding="utf-8") as f:
+    for q, a in responses:
+        f.write(f"Q: {q}\nA: {a}\n\n")
+
+print(f"\n✅ 所有回應已儲存至：{filename}")
